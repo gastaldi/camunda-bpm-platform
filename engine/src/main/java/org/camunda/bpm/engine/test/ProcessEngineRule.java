@@ -20,7 +20,6 @@ import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-
 import org.camunda.bpm.engine.AuthorizationService;
 import org.camunda.bpm.engine.CaseService;
 import org.camunda.bpm.engine.DecisionService;
@@ -109,6 +108,7 @@ public class ProcessEngineRule extends TestWatcher implements ProcessEngineServi
   protected List<String> additionalDeployments = new ArrayList<>();
 
   protected boolean ensureCleanAfterTest = false;
+  protected boolean failIfNotClean = false;
 
   protected ProcessEngine processEngine;
   protected ProcessEngineConfigurationImpl processEngineConfiguration;
@@ -126,29 +126,31 @@ public class ProcessEngineRule extends TestWatcher implements ProcessEngineServi
   protected DecisionService decisionService;
 
   public ProcessEngineRule() {
-    this(false);
+    this(true, false);
   }
 
-  public ProcessEngineRule(boolean ensureCleanAfterTest) {
+  public ProcessEngineRule(boolean ensureCleanAfterTest, boolean failIfNotClean) {
     this.ensureCleanAfterTest = ensureCleanAfterTest;
   }
 
   public ProcessEngineRule(String configurationResource) {
-    this(configurationResource, false);
+    this(configurationResource, true, false);
   }
 
-  public ProcessEngineRule(String configurationResource, boolean ensureCleanAfterTest) {
+  public ProcessEngineRule(String configurationResource, boolean ensureCleanAfterTest, boolean failIfNotClean) {
     this.configurationResource = configurationResource;
     this.ensureCleanAfterTest = ensureCleanAfterTest;
+    this.failIfNotClean = failIfNotClean;
   }
 
   public ProcessEngineRule(ProcessEngine processEngine) {
-    this(processEngine, false);
+    this(processEngine, true, false);
   }
 
-  public ProcessEngineRule(ProcessEngine processEngine, boolean ensureCleanAfterTest) {
+  public ProcessEngineRule(ProcessEngine processEngine, boolean ensureCleanAfterTest, boolean failIfNotClean) {
     this.processEngine = processEngine;
     this.ensureCleanAfterTest = ensureCleanAfterTest;
+    this.failIfNotClean = failIfNotClean;
   }
 
   @Override
@@ -242,7 +244,7 @@ public class ProcessEngineRule extends TestWatcher implements ProcessEngineServi
     }
 
     if (ensureCleanAfterTest) {
-      TestHelper.assertAndEnsureCleanDbAndCache(processEngine);
+      TestHelper.assertAndEnsureCleanDbAndCache(processEngine, failIfNotClean);
     }
 
     TestHelper.resetIdGenerator(processEngineConfiguration);
